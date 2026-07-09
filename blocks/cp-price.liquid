@@ -1,0 +1,71 @@
+{% comment %} Custom product price block. Updated live by cp-variant.js via [data-cp-price]. {% endcomment %}
+{% liquid
+  assign b = block.settings
+  assign product = closest.product
+  if request.visual_preview_mode and product == blank
+    assign product = collections.all.products.first
+  endif
+  assign on_sale = false
+  if b.show_compare_at and product.compare_at_price > product.price
+    assign on_sale = true
+  endif
+%}
+
+<div
+  class="cp-price cp-price--{{ b.alignment }}"
+  data-cp-price
+  aria-live="polite"
+  {{ block.shopify_attributes }}
+>
+  {% if product.price_varies %}
+    <span class="cp-price__from">From</span>
+    <span class="cp-price__current">{{ product.price_min | money }}</span>
+  {% elsif on_sale %}
+    <span class="cp-price__current cp-price__current--sale">{{ product.price | money }}</span>
+    <s class="cp-price__was">{{ product.compare_at_price | money }}</s>
+  {% else %}
+    <span class="cp-price__current">{{ product.price | money }}</span>
+  {% endif %}
+</div>
+
+{% stylesheet %}
+  .cp-price {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-size: 1.35rem;
+    font-weight: 600;
+  }
+  .cp-price--center { justify-content: center; }
+  .cp-price--right { justify-content: flex-end; }
+  .cp-price__from { font-size: 0.85rem; font-weight: 400; opacity: 0.7; }
+  .cp-price__current--sale { color: var(--color-sale-text, #b3093c); }
+  .cp-price__was { font-size: 1rem; font-weight: 400; opacity: 0.55; }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Product price",
+  "tag": null,
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_compare_at",
+      "label": "Show compare-at (strikethrough) price",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "left"
+    }
+  ],
+  "presets": [{ "name": "Product price" }]
+}
+{% endschema %}

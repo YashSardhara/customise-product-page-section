@@ -1,19 +1,15 @@
-// Custom Product section behaviour — standalone, no theme imports.
-// Handles: variant selection -> price/media/availability, quantity stepper,
-// thumbnail swap, and add-to-cart via Shopify AJAX API with loading + validation.
-class CustomProduct extends HTMLElement {
-  connectedCallback() {
-    this.form = this.querySelector('.cp__form');
-    if (!this.form) return; // no product context (e.g. editor placeholder)
+// Custom Product coordination — standalone, no theme imports.
+// <cp-variant> resolves the selected variant and drives the sibling theme
+// buy-buttons form: sets input[name="id"], updates the cp-price block, swaps
+// section media, and toggles the theme add-to-cart button (which keeps the
+// theme's fly-to-cart animation + cart drawer). Also wires image thumbnails.
 
-    this.idInput = this.querySelector('[data-cp-id]');
-    this.priceEl = this.querySelector('[data-cp-price]');
-    this.mediaEl = this.querySelector('[data-cp-media]');
-    this.atc = this.querySelector('[data-cp-atc]');
-    this.atcLabel = this.querySelector('[data-cp-atc-label]');
-    this.errorEl = this.querySelector('[data-cp-error]');
-    this.qtyInput = this.querySelector('[data-cp-qty]');
-    this.optionFieldsets = [...this.querySelectorAll('[data-cp-option-position]')];
+class CpVariant extends HTMLElement {
+  connectedCallback() {
+    this.scope = this.closest('.shopify-section') || document;
+    this.fieldsets = [...this.querySelectorAll('[data-cp-option-position]')].sort(
+      (a, b) => Number(a.dataset.cpOptionPosition) - Number(b.dataset.cpOptionPosition)
+    );
 
     try {
       this.variants = JSON.parse(this.querySelector('[data-cp-variants]').textContent);
@@ -21,31 +17,35 @@ class CustomProduct extends HTMLElement {
       this.variants = [];
     }
 
-    this.addToCartText = this.atcLabel ? this.atcLabel.textContent.trim() : 'Add to cart';
-
-    // Variant + quantity handlers
-    this.querySelectorAll('.cp__swatch-input').forEach((input) =>
-      input.addEventListener('change', () => this.onVariantChange())
-    );
-    this.querySelectorAll('[data-cp-step]').forEach((btn) =>
-      btn.addEventListener('click', () => this.stepQty(Number(btn.dataset.cpStep)))
-    );
-    this.querySelectorAll('[data-cp-thumb]').forEach((btn) =>
-      btn.addEventListener('click', () => this.swapThumb(btn))
+    this.querySelectorAll('.cp-variant__input').forEach((input) =>
+      input.addEventListener('change', () => this.update())
     );
 
-    this.form.addEventListener('submit', (e) => this.onSubmit(e));
-
-    // Single-variant products: id already set server-side, so it's ready to add.
-    this.currentVariant = this.optionFieldsets.length === 0 ? this.variants[0] : null;
+    this.update(); // no pre-selection -> disables add-to-cart until a valid pick
   }
 
-  // Collect one selected value per option, in option-position order.
-  getSelectedOptions() {
+  get idInput() {
+    return this.scope.querySelector('form[data-type="add-to-cart-form"] input[name="id"]');
+  }
+  get priceEl() {
+    return this.scope.querySelector('[data-cp-price]');
+  }
+  get mediaEl() {
+    return this.scope.querySelector('[data-cp-media]');
+  }
+  get atcComponent() {
+    return this.scope.querySelector('add-to-cart-component');
+  }
+  get atcButton() {
+    const c = this.atcComponent;
+    return c ? c.querySelector('button, [ref="addToCartButton"]') : null;
+  }
+
+  getSelected() {
     const values = [];
-    for (const fs of this.optionFieldsets) {
-      const checked = fs.querySelector('.cp__swatch-input:checked');
-      if (!checked) return null; // an option is unselected
+    for (const fs of this.fieldsets) {
+      const checked = fs.querySelector('.cp-variant__input:checked');
+      if (!checked) return null;
       values.push(checked.value);
     }
     return values;
@@ -57,124 +57,69 @@ class CustomProduct extends HTMLElement {
     );
   }
 
-  onVariantChange() {
-    this.clearError();
-    const selected = this.getSelectedOptions();
+  update() {
+    this.reflectSelectedLabels();
+    const selected = this.getSelected();
 
-    if (!selected) {
-      this.currentVariant = null;
-      this.setButton('Select options', true);
-      return;
-    }
+    if (!selected) return this.setAtc(false); // some option still unselected
 
     const variant = this.findVariant(selected);
-    this.currentVariant = variant || null;
-
     if (!variant) {
-      this.setButton('Unavailable', true);
-      return;
+      if (this.idInput) this.idInput.value = '';
+      return this.setAtc(false); // combination not offered
     }
 
-    this.idInput.value = variant.id;
+    if (this.idInput) this.idInput.value = variant.id;
     this.updatePrice(variant);
     if (variant.media && this.mediaEl) this.mediaEl.src = variant.media;
+    if (variant.media && this.atcComponent) {
+      this.atcComponent.setAttribute('data-product-variant-media', variant.media + '&width=100');
+    }
+    this.setAtc(variant.available);
+  }
 
-    if (variant.available) {
-      this.setButton(this.addToCartText, false);
-    } else {
-      this.setButton('Sold out', true);
+  reflectSelectedLabels() {
+    if (this.dataset.showSelected !== 'true') return;
+    for (const fs of this.fieldsets) {
+      const target = fs.querySelector('[data-cp-selected]');
+      if (!target) continue;
+      const checked = fs.querySelector('.cp-variant__input:checked');
+      target.textContent = checked ? `: ${checked.value}` : '';
     }
   }
 
   updatePrice(variant) {
-    if (!this.priceEl) return;
+    const el = this.priceEl;
+    if (!el) return;
     if (variant.compare_at) {
-      this.priceEl.innerHTML =
-        `<span class="cp__price-current">${variant.price}</span> <s class="cp__price-was">${variant.compare_at}</s>`;
+      el.innerHTML =
+        `<span class="cp-price__current cp-price__current--sale">${variant.price}</span> <s class="cp-price__was">${variant.compare_at}</s>`;
     } else {
-      this.priceEl.textContent = variant.price;
+      el.innerHTML = `<span class="cp-price__current">${variant.price}</span>`;
     }
   }
 
-  setButton(label, disabled) {
-    if (this.atcLabel) this.atcLabel.textContent = label;
-    if (this.atc) this.atc.disabled = disabled;
-  }
-
-  stepQty(delta) {
-    const next = Math.max(1, (parseInt(this.qtyInput.value, 10) || 1) + delta);
-    this.qtyInput.value = next;
-  }
-
-  swapThumb(btn) {
-    if (this.mediaEl && btn.dataset.cpThumbSrc) this.mediaEl.src = btn.dataset.cpThumbSrc;
-    this.querySelectorAll('[data-cp-thumb]').forEach((b) => b.classList.toggle('is-active', b === btn));
-  }
-
-  clearError() {
-    if (!this.errorEl) return;
-    this.errorEl.hidden = true;
-    this.errorEl.textContent = '';
-  }
-
-  showError(message) {
-    if (!this.errorEl) return;
-    this.errorEl.textContent = message;
-    this.errorEl.hidden = false;
-  }
-
-  async onSubmit(event) {
-    event.preventDefault();
-
-    // Validation: a purchasable variant must be resolved.
-    if (this.optionFieldsets.length && !this.getSelectedOptions()) {
-      this.showError('Please select all options first.');
-      return;
+  // Enable/disable the theme add-to-cart button (prefer its component API).
+  setAtc(enabled) {
+    const c = this.atcComponent;
+    if (c && typeof c.enable === 'function' && typeof c.disable === 'function') {
+      enabled ? c.enable() : c.disable();
+    } else if (this.atcButton) {
+      this.atcButton.disabled = !enabled;
     }
-    if (!this.idInput.value || !this.currentVariant || !this.currentVariant.available) {
-      this.showError('Please select an available option.');
-      return;
-    }
-
-    this.clearError();
-    this.setLoading(true);
-
-    try {
-      const res = await fetch('/cart/add.js', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({
-          id: Number(this.idInput.value),
-          quantity: Number(this.qtyInput.value) || 1,
-        }),
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        this.showError(data.description || data.message || 'Could not add to cart.');
-        this.setLoading(false);
-        return;
-      }
-
-      // Success: brief confirmation, notify theme, then reset.
-      this.setLoading(false);
-      this.setButton('Added ✓', true);
-      document.dispatchEvent(new CustomEvent('cart:refresh', { bubbles: true, detail: { source: 'custom-product' } }));
-      setTimeout(() => this.setButton(this.addToCartText, false), 2000);
-    } catch {
-      this.showError('Network error. Please try again.');
-      this.setLoading(false);
-    }
-  }
-
-  setLoading(loading) {
-    if (!this.atc) return;
-    this.atc.setAttribute('aria-busy', loading ? 'true' : 'false');
-    this.atc.disabled = loading;
-    if (this.atcLabel) this.atcLabel.textContent = loading ? 'Adding…' : this.addToCartText;
   }
 }
 
-if (!customElements.get('custom-product')) {
-  customElements.define('custom-product', CustomProduct);
+if (!customElements.get('cp-variant')) {
+  customElements.define('cp-variant', CpVariant);
 }
+
+// Image thumbnails -> swap the main media image (delegated, works for all sections).
+document.addEventListener('click', (event) => {
+  const thumb = event.target.closest('[data-cp-thumb]');
+  if (!thumb) return;
+  const scope = thumb.closest('.shopify-section') || document;
+  const main = scope.querySelector('[data-cp-media]');
+  if (main && thumb.dataset.cpThumbSrc) main.src = thumb.dataset.cpThumbSrc;
+  scope.querySelectorAll('[data-cp-thumb]').forEach((b) => b.classList.toggle('is-active', b === thumb));
+});

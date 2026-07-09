@@ -1,0 +1,114 @@
+{% comment %}
+  Custom variant selector block. Renders radio swatches + a variants JSON payload.
+  cp-variant.js resolves the selection and drives the sibling buy-buttons form
+  (input[name="id"]), the cp-price block, the section media, and add-to-cart state.
+{% endcomment %}
+{% liquid
+  assign b = block.settings
+  assign product = closest.product
+  if request.visual_preview_mode and product == blank
+    assign product = collections.all.products.first
+  endif
+%}
+
+{% unless product.has_only_default_variant %}
+  <cp-variant
+    class="cp-variant cp-variant--{{ b.alignment }}"
+    data-show-selected="{{ b.show_selected_value }}"
+    {{ block.shopify_attributes }}
+  >
+    {% for option in product.options_with_values %}
+      <fieldset class="cp-variant__group" data-cp-option-position="{{ option.position }}">
+        <legend class="cp-variant__name">
+          {{ option.name | escape }}
+          {% if b.show_selected_value %}<span class="cp-variant__selected" data-cp-selected></span>{% endif %}
+        </legend>
+        <div class="cp-variant__swatches">
+          {% for value in option.values %}
+            <label class="cp-variant__swatch">
+              <input type="radio" class="cp-variant__input" name="cp-option-{{ block.id }}-{{ option.position }}" value="{{ value | escape }}">
+              <span class="cp-variant__label">{{ value | escape }}</span>
+            </label>
+          {% endfor %}
+        </div>
+      </fieldset>
+    {% endfor %}
+
+    <script type="application/json" data-cp-variants>
+      [
+        {%- for variant in product.variants -%}
+          {
+            "id": {{ variant.id }},
+            "available": {{ variant.available }},
+            "options": {{ variant.options | json }},
+            "price": {{ variant.price | money | json }},
+            "compare_at": {% if variant.compare_at_price and variant.compare_at_price > variant.price %}{{ variant.compare_at_price | money | json }}{% else %}null{% endif %},
+            "media": {% if variant.featured_media %}{{ variant.featured_media.preview_image | image_url: width: 900 | json }}{% else %}null{% endif %}
+          }{%- unless forloop.last -%},{%- endunless -%}
+        {%- endfor -%}
+      ]
+    </script>
+  </cp-variant>
+{% endunless %}
+
+{% stylesheet %}
+  .cp-variant__group { border: 0; margin: 0; padding: 0; }
+  .cp-variant__name {
+    padding: 0;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .cp-variant__selected { margin-inline-start: 0.4rem; font-weight: 400; text-transform: none; opacity: 0.7; }
+  .cp-variant__swatches { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .cp-variant--center .cp-variant__swatches { justify-content: center; }
+  .cp-variant--right .cp-variant__swatches { justify-content: flex-end; }
+  .cp-variant__input { position: absolute; opacity: 0; pointer-events: none; }
+  .cp-variant__label {
+    display: inline-block;
+    padding: 0.55rem 1rem;
+    border: 1px solid var(--color-foreground, #1a1a1a);
+    border-radius: var(--style-border-radius-inputs, 6px);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    user-select: none;
+  }
+  .cp-variant__input:checked + .cp-variant__label {
+    background: var(--color-foreground, #1a1a1a);
+    color: var(--color-background, #fff);
+  }
+  .cp-variant__input:focus-visible + .cp-variant__label {
+    outline: 2px solid var(--color-foreground, #1a1a1a);
+    outline-offset: 2px;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Variant selector",
+  "tag": null,
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_selected_value",
+      "label": "Show selected value next to option name",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "left"
+    }
+  ],
+  "presets": [{ "name": "Variant selector" }]
+}
+{% endschema %}

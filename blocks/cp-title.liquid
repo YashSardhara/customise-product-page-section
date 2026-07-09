@@ -1,0 +1,75 @@
+{% comment %} Custom product title block. {% endcomment %}
+{% liquid
+  assign b = block.settings
+  assign product = closest.product
+  if request.visual_preview_mode and product == blank
+    assign product = collections.all.products.first
+  endif
+%}
+
+{% capture title_html %}{{ product.title | escape | default: 'Product title' }}{% endcapture %}
+
+<div
+  class="cp-title cp-title--{{ b.alignment }}"
+  style="--cp-title-size: {{ b.size }};"
+  {{ block.shopify_attributes }}
+>
+  {% case b.heading_tag %}
+    {% when 'h1' %}<h1 class="cp-title__text">{{ title_html }}</h1>
+    {% when 'h2' %}<h2 class="cp-title__text">{{ title_html }}</h2>
+    {% else %}<h3 class="cp-title__text">{{ title_html }}</h3>
+  {% endcase %}
+</div>
+
+{% stylesheet %}
+  .cp-title__text {
+    margin: 0;
+    font-size: var(--cp-title-size, 1.8rem);
+    line-height: 1.15;
+  }
+  .cp-title--center { text-align: center; }
+  .cp-title--right { text-align: right; }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Product title",
+  "tag": null,
+  "settings": [
+    {
+      "type": "select",
+      "id": "heading_tag",
+      "label": "Heading tag",
+      "options": [
+        { "value": "h1", "label": "H1" },
+        { "value": "h2", "label": "H2" },
+        { "value": "h3", "label": "H3" }
+      ],
+      "default": "h1"
+    },
+    {
+      "type": "select",
+      "id": "size",
+      "label": "Size",
+      "options": [
+        { "value": "1.4rem", "label": "Small" },
+        { "value": "1.8rem", "label": "Medium" },
+        { "value": "2.4rem", "label": "Large" }
+      ],
+      "default": "1.8rem"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "left"
+    }
+  ],
+  "presets": [{ "name": "Product title" }]
+}
+{% endschema %}
