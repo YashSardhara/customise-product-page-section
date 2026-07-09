@@ -16,7 +16,7 @@
           "type": "text",
           "name": "t:names.heading",
           "settings": {
-            "text": "<p>Checkout Ecomexperts Assignment</p>",
+            "text": "<p>Pilgrim Custom Product Assignment</p>",
             "width": "fit-content",
             "max_width": "normal",
             "alignment": "left",
@@ -43,7 +43,7 @@
           "name": "t:names.button",
           "settings": {
             "label": "Gift Guide",
-            "link": "shopify://pages/gift-guide",
+            "link": "https://yash-sardhara-48-teststore-ltpz7f0s.myshopify.com/products/black-leather-bag?view=custom",
             "open_in_new_tab": false,
             "style_class": "button-custom",
             "custom_button_background": "rgba(0,0,0,0)",
