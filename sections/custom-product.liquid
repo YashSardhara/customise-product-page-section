@@ -1,0 +1,449 @@
+{% comment %}
+  Custom Product section — built from scratch (does not use theme product blocks).
+  Displays: media, title, price, variant selector, quantity, add-to-cart.
+  Extra blocks (e.g. "Why customers love this") render via content_for 'blocks'.
+{% endcomment %}
+
+{% liquid
+  assign s = section.settings
+  assign only_default = product.has_only_default_variant
+  assign first_variant = product.selected_or_first_available_variant
+%}
+
+<custom-product
+  class="cp"
+  data-media-position="{{ s.media_position }}"
+  {{ section.shopify_attributes }}
+>
+  {% if product == blank %}
+    <p class="cp__placeholder">Add this section to a product template to preview it.</p>
+  {% else %}
+    <div class="cp__grid">
+      <div class="cp__media">
+        {% if product.featured_media %}
+          <img
+            class="cp__media-main"
+            data-cp-media
+            src="{{ product.featured_media.preview_image | image_url: width: 900 }}"
+            srcset="
+              {{ product.featured_media.preview_image | image_url: width: 500 }} 500w,
+              {{ product.featured_media.preview_image | image_url: width: 900 }} 900w,
+              {{ product.featured_media.preview_image | image_url: width: 1400 }} 1400w"
+            sizes="(min-width: 750px) 45vw, 100vw"
+            width="{{ product.featured_media.preview_image.width }}"
+            height="{{ product.featured_media.preview_image.height }}"
+            alt="{{ product.featured_media.preview_image.alt | escape | default: product.title | escape }}"
+            loading="eager"
+          >
+        {% else %}
+          {{ 'product-1' | placeholder_svg_tag: 'cp__media-main cp__media-main--placeholder' }}
+        {% endif %}
+
+        {% if s.show_thumbnails and product.images.size > 1 %}
+          <div class="cp__thumbs" data-cp-thumbs>
+            {% for image in product.images limit: 6 %}
+              <button
+                type="button"
+                class="cp__thumb{% if forloop.first %} is-active{% endif %}"
+                data-cp-thumb
+                data-cp-thumb-src="{{ image | image_url: width: 900 }}"
+                aria-label="Image {{ forloop.index }}"
+              >
+                <img src="{{ image | image_url: width: 120 }}" width="60" height="60" loading="lazy" alt="">
+              </button>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="cp__info">
+        <h1 class="cp__title">{{ product.title | escape }}</h1>
+
+        <div class="cp__price" data-cp-price aria-live="polite">
+          {% if product.price_varies %}
+            <span class="cp__price-from">From</span>
+            {{ product.price_min | money }}
+          {% elsif product.compare_at_price > product.price %}
+            <span class="cp__price-current">{{ product.price | money }}</span>
+            <s class="cp__price-was">{{ product.compare_at_price | money }}</s>
+          {% else %}
+            {{ product.price | money }}
+          {% endif %}
+        </div>
+
+        {% form 'product', product, class: 'cp__form', novalidate: 'novalidate' %}
+          <input type="hidden" name="id" data-cp-id value="{% if only_default %}{{ first_variant.id }}{% endif %}">
+
+          {% unless only_default %}
+            <div class="cp__options" data-cp-options>
+              {% for option in product.options_with_values %}
+                <fieldset class="cp__option" data-cp-option-position="{{ option.position }}">
+                  <legend class="cp__option-name">{{ option.name | escape }}</legend>
+                  <div class="cp__swatches">
+                    {% for value in option.values %}
+                      <label class="cp__swatch">
+                        <input
+                          type="radio"
+                          class="cp__swatch-input"
+                          name="cp-option-{{ option.position }}"
+                          value="{{ value | escape }}"
+                        >
+                        <span class="cp__swatch-label">{{ value | escape }}</span>
+                      </label>
+                    {% endfor %}
+                  </div>
+                </fieldset>
+              {% endfor %}
+            </div>
+          {% endunless %}
+
+          <div class="cp__buy">
+            <div class="cp__qty">
+              <button type="button" class="cp__qty-btn" data-cp-step="-1" aria-label="Decrease quantity">&minus;</button>
+              <input
+                type="number"
+                class="cp__qty-input"
+                name="quantity"
+                value="1"
+                min="1"
+                inputmode="numeric"
+                data-cp-qty
+                aria-label="Quantity"
+              >
+              <button type="button" class="cp__qty-btn" data-cp-step="1" aria-label="Increase quantity">+</button>
+            </div>
+
+            <button type="submit" class="cp__atc" data-cp-atc {% unless only_default %}disabled{% endunless %}>
+              <span class="cp__atc-label" data-cp-atc-label>
+                {% if only_default %}{{ 'products.product.add_to_cart' | t | default: 'Add to cart' }}{% else %}Select options{% endif %}
+              </span>
+              <span class="cp__spinner" aria-hidden="true"></span>
+            </button>
+          </div>
+
+          <p class="cp__error" data-cp-error role="alert" hidden></p>
+
+          {% if s.show_dynamic_checkout %}
+            {{ form | payment_button }}
+          {% endif %}
+        {% endform %}
+
+        {% content_for 'blocks' %}
+      </div>
+    </div>
+
+    <script type="application/json" data-cp-variants>
+      [
+        {%- for variant in product.variants -%}
+          {
+            "id": {{ variant.id }},
+            "available": {{ variant.available }},
+            "options": {{ variant.options | json }},
+            "price": {{ variant.price | money | json }},
+            "compare_at": {% if variant.compare_at_price and variant.compare_at_price > variant.price %}{{ variant.compare_at_price | money | json }}{% else %}null{% endif %},
+            "media": {% if variant.featured_media %}{{ variant.featured_media.preview_image | image_url: width: 900 | json }}{% else %}null{% endif %}
+          }{%- unless forloop.last -%},{%- endunless -%}
+        {%- endfor -%}
+      ]
+    </script>
+  {% endif %}
+</custom-product>
+
+<script src="{{ 'custom-product.js' | asset_url }}" defer></script>
+
+{% stylesheet %}
+  .cp {
+    display: block;
+    max-width: var(--page-width, 1200px);
+    margin-inline: auto;
+    padding: 2rem 1.25rem;
+  }
+
+  .cp__grid {
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: 1fr;
+  }
+
+  @media screen and (min-width: 750px) {
+    .cp__grid {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: start;
+    }
+
+    .cp[data-media-position="right"] .cp__media {
+      order: 2;
+    }
+
+    .cp__info {
+      position: sticky;
+      top: calc(var(--header-height, 0px) + 1.5rem);
+    }
+  }
+
+  .cp__media-main {
+    width: 100%;
+    height: auto;
+    border-radius: var(--style-border-radius-inputs, 8px);
+    object-fit: contain;
+    background: var(--color-background-secondary, #f5f5f5);
+  }
+
+  .cp__thumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+
+  .cp__thumb {
+    padding: 0;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    background: none;
+    cursor: pointer;
+    line-height: 0;
+    overflow: hidden;
+  }
+
+  .cp__thumb.is-active {
+    border-color: var(--color-foreground, #1a1a1a);
+  }
+
+  .cp__thumb img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+  }
+
+  .cp__title {
+    margin: 0 0 0.5rem;
+    font-size: clamp(1.4rem, 1rem + 1.6vw, 2.1rem);
+    line-height: 1.15;
+  }
+
+  .cp__price {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+  }
+
+  .cp__price-from {
+    font-size: 0.85rem;
+    font-weight: 400;
+    opacity: 0.7;
+  }
+
+  .cp__price-was {
+    font-size: 1rem;
+    font-weight: 400;
+    opacity: 0.55;
+  }
+
+  .cp__price-current {
+    color: var(--color-sale-text, #b3093c);
+  }
+
+  .cp__option {
+    border: 0;
+    margin: 0 0 1rem;
+    padding: 0;
+  }
+
+  .cp__option-name {
+    padding: 0;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .cp__swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .cp__swatch-input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .cp__swatch-label {
+    display: inline-block;
+    padding: 0.55rem 1rem;
+    border: 1px solid var(--color-foreground, #1a1a1a);
+    border-radius: var(--style-border-radius-inputs, 6px);
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.15s ease, color 0.15s ease;
+    user-select: none;
+  }
+
+  .cp__swatch-input:checked + .cp__swatch-label {
+    background: var(--color-foreground, #1a1a1a);
+    color: var(--color-background, #fff);
+  }
+
+  .cp__swatch-input:focus-visible + .cp__swatch-label {
+    outline: 2px solid var(--color-foreground, #1a1a1a);
+    outline-offset: 2px;
+  }
+
+  .cp__buy {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin: 1.25rem 0 0.5rem;
+  }
+
+  .cp__qty {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--color-foreground, #1a1a1a);
+    border-radius: var(--style-border-radius-inputs, 6px);
+    overflow: hidden;
+  }
+
+  .cp__qty-btn {
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 0;
+    background: none;
+    font-size: 1.15rem;
+    cursor: pointer;
+    color: inherit;
+  }
+
+  .cp__qty-input {
+    width: 3rem;
+    height: 2.75rem;
+    border: 0;
+    border-inline: 1px solid var(--color-border, #ddd);
+    text-align: center;
+    font-size: 1rem;
+    background: none;
+    color: inherit;
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+  .cp__qty-input::-webkit-outer-spin-button,
+  .cp__qty-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .cp__atc {
+    flex: 1 1 12rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0.5rem 1.5rem;
+    border: 1px solid var(--color-foreground, #1a1a1a);
+    border-radius: var(--style-border-radius-inputs, 6px);
+    background: var(--color-foreground, #1a1a1a);
+    color: var(--color-background, #fff);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+  }
+
+  .cp__atc[disabled] {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .cp__atc[aria-busy="true"] {
+    cursor: progress;
+  }
+
+  .cp__spinner {
+    width: 1.1rem;
+    height: 1.1rem;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    display: none;
+    animation: cp-spin 0.6s linear infinite;
+  }
+
+  .cp__atc[aria-busy="true"] .cp__spinner {
+    display: inline-block;
+  }
+
+  @keyframes cp-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cp__spinner { animation-duration: 1.5s; }
+  }
+
+  .cp__error {
+    margin: 0.5rem 0 0;
+    color: var(--color-error, #b3093c);
+    font-size: 0.9rem;
+  }
+
+  .cp__placeholder {
+    padding: 2rem;
+    text-align: center;
+    opacity: 0.7;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Custom product",
+  "tag": "section",
+  "class": "section-custom-product",
+  "settings": [
+    {
+      "type": "select",
+      "id": "media_position",
+      "label": "Desktop media position",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_thumbnails",
+      "label": "Show image thumbnails",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dynamic_checkout",
+      "label": "Show dynamic checkout button",
+      "default": true
+    }
+  ],
+  "blocks": [
+    { "type": "why-customers-love" },
+    { "type": "@app" }
+  ],
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "presets": [
+    {
+      "name": "Custom product",
+      "blocks": [
+        { "type": "why-customers-love" }
+      ]
+    }
+  ]
+}
+{% endschema %}
