@@ -43,7 +43,7 @@
           "name": "t:names.button",
           "settings": {
             "label": "View Produt",
-            "link": "shopify://products/black-leather-bag",
+            "link": "shopify://products/10-vitamin-c-face-serum-for-triple-glow",
             "open_in_new_tab": false,
             "style_class": "button-custom",
             "custom_button_background": "rgba(0,0,0,0)",

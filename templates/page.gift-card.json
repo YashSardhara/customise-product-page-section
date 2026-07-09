@@ -85,7 +85,7 @@
         "product_jg9RMJ": {
           "type": "product",
           "settings": {
-            "product": "black-leather-bag",
+            "product": "10-vitamin-c-face-serum-for-triple-glow",
             "hotspot_x": 60,
             "hotspot_y": 61
           }
@@ -141,9 +141,7 @@
       ],
       "name": "Gift Grid",
       "settings": {
-        "heading": "Tisso vison in the wild",
-        "soft_winter_jacket": "dark-winter-jacket",
-        "soft_winter_jacket_variant": "43511653859418"
+        "heading": "Tisso vison in the wild"
       }
     }
   },
