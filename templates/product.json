@@ -282,6 +282,22 @@
                 "padding-inline-end": 0
               },
               "blocks": {}
+            },
+            "why_customers_love_4UhMqy": {
+              "type": "why-customers-love",
+              "name": "Why customers love this",
+              "settings": {
+                "heading": "Why Customers Love This Product",
+                "bullet_1": "Dermatologist-tested and safe for daily use",
+                "bullet_2": "Made with clean, cruelty-free ingredients",
+                "bullet_3": "Loved by 50,000+ happy customers",
+                "accent_color": "#1a1a1a",
+                "padding-block-start": 16,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
             }
           },
           "block_order": [
@@ -289,7 +305,8 @@
             "divider_VJhene",
             "variant_picker_R3rGDr",
             "buy_buttons_eYQEYi",
-            "text_aEtTtq"
+            "text_aEtTtq",
+            "why_customers_love_4UhMqy"
           ]
         }
       },
