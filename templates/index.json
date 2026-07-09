@@ -16,7 +16,7 @@
           "type": "text",
           "name": "t:names.heading",
           "settings": {
-            "text": "<p>Pilgrim Custom Product Assignment</p>",
+            "text": "<p>Pilgrim Customize Product section Assignment</p>",
             "width": "fit-content",
             "max_width": "normal",
             "alignment": "left",
@@ -42,8 +42,8 @@
           "type": "button",
           "name": "t:names.button",
           "settings": {
-            "label": "View customised product template",
-            "link": "https://yash-sardhara-48-teststore-ltpz7f0s.myshopify.com/products/black-leather-bag?view=custom",
+            "label": "View Produt",
+            "link": "shopify://products/black-leather-bag",
             "open_in_new_tab": false,
             "style_class": "button-custom",
             "custom_button_background": "rgba(0,0,0,0)",
