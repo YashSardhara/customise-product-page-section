@@ -20,7 +20,7 @@
   {% else %}
     <div class="cp__grid">
       <cp-gallery class="cp__media">
-        <div class="cp__media-frame">
+        <div class="cp__media-frame" style="position: relative;">
           {% if product.featured_media %}
             <img
               class="cp__media-main"
@@ -36,8 +36,8 @@
           {% endif %}
 
           {% if product.images.size > 1 %}
-            <button type="button" class="cp__nav cp__nav--prev" data-cp-prev aria-label="Previous image">&lsaquo;</button>
-            <button type="button" class="cp__nav cp__nav--next" data-cp-next aria-label="Next image">&rsaquo;</button>
+            <button type="button" class="cp__nav cp__nav--prev" data-cp-prev aria-label="Previous image" style="position:absolute;top:50%;inset-inline-start:8px;transform:translateY(-50%);z-index:2;width:40px;height:40px;display:flex;align-items:center;justify-content:center;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,0.9);color:#1a1a1a;font-size:24px;line-height:1;cursor:pointer;box-shadow:0 1px 6px rgba(0,0,0,0.2);appearance:none;-webkit-appearance:none;">&lsaquo;</button>
+            <button type="button" class="cp__nav cp__nav--next" data-cp-next aria-label="Next image" style="position:absolute;top:50%;inset-inline-end:8px;transform:translateY(-50%);z-index:2;width:40px;height:40px;display:flex;align-items:center;justify-content:center;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,0.9);color:#1a1a1a;font-size:24px;line-height:1;cursor:pointer;box-shadow:0 1px 6px rgba(0,0,0,0.2);appearance:none;-webkit-appearance:none;">&rsaquo;</button>
           {% endif %}
         </div>
 
@@ -115,28 +115,34 @@
     background: var(--color-background-secondary, #f5f5f5);
   }
 
-  .cp__nav {
+  .cp__media-frame .cp__nav {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
+    z-index: 2;
     width: 2.5rem;
     height: 2.5rem;
+    min-width: 0;
+    padding: 0;
+    margin: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     border: none;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.9);
     color: #1a1a1a;
     font-size: 1.6rem;
     line-height: 1;
     cursor: pointer;
     box-shadow: 0 1px 6px rgba(0, 0, 0, 0.18);
+    appearance: none;
+    -webkit-appearance: none;
   }
 
-  .cp__nav:hover { background: #fff; }
-  .cp__nav--prev { inset-inline-start: 0.5rem; }
-  .cp__nav--next { inset-inline-end: 0.5rem; }
+  .cp__media-frame .cp__nav:hover { background: #fff; }
+  .cp__media-frame .cp__nav--prev { inset-inline-start: 0.5rem; }
+  .cp__media-frame .cp__nav--next { inset-inline-end: 0.5rem; }
 
   .cp__thumbs {
     display: flex;
