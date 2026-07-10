@@ -297,11 +297,42 @@
     "custom_product_gyrged": {
       "type": "custom-product",
       "blocks": {
+        "cp_badge_cBRj8D": {
+          "type": "cp-badge",
+          "name": "Badge",
+          "settings": {
+            "tag": "Best Seller",
+            "label": "BESTSELLER",
+            "text_color": "#e2603f"
+          },
+          "blocks": {}
+        },
         "cp_title_qHiHni": {
           "type": "cp-title",
           "settings": {
             "heading_tag": "h1",
-            "size": "1.8rem",
+            "alignment": "left"
+          },
+          "blocks": {}
+        },
+        "cp_richtext_XpMFNh": {
+          "type": "cp-richtext",
+          "name": "Rich text",
+          "settings": {
+            "content": "<p>Discover Glowing, Brighter Skin</p>",
+            "text_color": "#DADADA",
+            "background_color": "",
+            "font_size": 16,
+            "alignment": "left",
+            "padding": 0,
+            "margin": 0
+          },
+          "blocks": {}
+        },
+        "cp_description_3NFGRT": {
+          "type": "cp-description",
+          "name": "Product description",
+          "settings": {
             "alignment": "left"
           },
           "blocks": {}
@@ -353,12 +384,12 @@
               "type": "quantity",
               "static": true,
               "settings": {
-                "input_style": "default",
+                "input_style": "custom",
                 "input_background_color": "{{ settings.color_palette.background }}",
                 "input_text_color": "{{ settings.color_palette.foreground }}",
                 "input_border_color": "{{ settings.color_palette.foreground }}",
                 "border_width": 1,
-                "border_radius": 0
+                "border_radius": 10
               },
               "blocks": {}
             },
@@ -399,7 +430,10 @@
         }
       },
       "block_order": [
+        "cp_badge_cBRj8D",
         "cp_title_qHiHni",
+        "cp_richtext_XpMFNh",
+        "cp_description_3NFGRT",
         "cp_price_7KTyXa",
         "cp_variant_hJRUcm",
         "buy_buttons_AnCDRe",
