@@ -99,13 +99,20 @@ class CpVariant extends HTMLElement {
     }
   }
 
-  // Enable/disable the theme add-to-cart button (prefer its component API).
+  // Enable/disable BOTH the add-to-cart and the dynamic "Buy it now" buttons.
   setAtc(enabled) {
     const c = this.atcComponent;
     if (c && typeof c.enable === 'function' && typeof c.disable === 'function') {
       enabled ? c.enable() : c.disable();
     } else if (this.atcButton) {
       this.atcButton.disabled = !enabled;
+    }
+
+    // Shopify dynamic checkout ("Buy it now") — can't be truly disabled, so block it visually.
+    const dynamic = this.scope.querySelector('.shopify-payment-button');
+    if (dynamic) {
+      dynamic.style.opacity = enabled ? '' : '0.5';
+      dynamic.style.pointerEvents = enabled ? '' : 'none';
     }
   }
 }
