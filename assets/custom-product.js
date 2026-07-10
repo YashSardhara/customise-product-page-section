@@ -114,12 +114,41 @@ if (!customElements.get('cp-variant')) {
   customElements.define('cp-variant', CpVariant);
 }
 
-// Image thumbnails -> swap the main media image (delegated, works for all sections).
-document.addEventListener('click', (event) => {
-  const thumb = event.target.closest('[data-cp-thumb]');
-  if (!thumb) return;
-  const scope = thumb.closest('.shopify-section') || document;
-  const main = scope.querySelector('[data-cp-media]');
-  if (main && thumb.dataset.cpThumbSrc) main.src = thumb.dataset.cpThumbSrc;
-  scope.querySelectorAll('[data-cp-thumb]').forEach((b) => b.classList.toggle('is-active', b === thumb));
-});
+// <cp-gallery> — main image with prev/next arrows and clickable thumbnails.
+class CpGallery extends HTMLElement {
+  connectedCallback() {
+    this.main = this.querySelector('[data-cp-media]');
+    this.thumbs = [...this.querySelectorAll('[data-cp-thumb]')];
+    try {
+      this.images = JSON.parse(this.querySelector('[data-cp-images]')?.textContent || '[]');
+    } catch {
+      this.images = [];
+    }
+    this.index = 0;
+
+    this.querySelector('[data-cp-prev]')?.addEventListener('click', () => this.step(-1));
+    this.querySelector('[data-cp-next]')?.addEventListener('click', () => this.step(1));
+    this.thumbs.forEach((thumb, i) => thumb.addEventListener('click', () => this.go(i)));
+  }
+
+  get count() {
+    return this.images.length || this.thumbs.length;
+  }
+
+  go(i) {
+    const n = this.count;
+    if (!n || !this.main) return;
+    this.index = (i + n) % n;
+    const src = this.images[this.index] || this.thumbs[this.index]?.dataset.cpThumbSrc;
+    if (src) this.main.src = src;
+    this.thumbs.forEach((b, j) => b.classList.toggle('is-active', j === this.index));
+  }
+
+  step(delta) {
+    this.go(this.index + delta);
+  }
+}
+
+if (!customElements.get('cp-gallery')) {
+  customElements.define('cp-gallery', CpGallery);
+}

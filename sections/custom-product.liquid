@@ -19,29 +19,31 @@
     <p class="cp__placeholder">Add this section to a product template to preview it.</p>
   {% else %}
     <div class="cp__grid">
-      <div class="cp__media">
-        {% if product.featured_media %}
-          <img
-            class="cp__media-main"
-            data-cp-media
-            src="{{ product.featured_media.preview_image | image_url: width: 900 }}"
-            srcset="
-              {{ product.featured_media.preview_image | image_url: width: 500 }} 500w,
-              {{ product.featured_media.preview_image | image_url: width: 900 }} 900w,
-              {{ product.featured_media.preview_image | image_url: width: 1400 }} 1400w"
-            sizes="(min-width: 750px) 45vw, 100vw"
-            width="{{ product.featured_media.preview_image.width }}"
-            height="{{ product.featured_media.preview_image.height }}"
-            alt="{{ product.featured_media.preview_image.alt | escape | default: product.title | escape }}"
-            loading="eager"
-          >
-        {% else %}
-          {{ 'product-1' | placeholder_svg_tag: 'cp__media-main' }}
-        {% endif %}
+      <cp-gallery class="cp__media">
+        <div class="cp__media-frame">
+          {% if product.featured_media %}
+            <img
+              class="cp__media-main"
+              data-cp-media
+              src="{{ product.featured_media.preview_image | image_url: width: 900 }}"
+              width="{{ product.featured_media.preview_image.width }}"
+              height="{{ product.featured_media.preview_image.height }}"
+              alt="{{ product.featured_media.preview_image.alt | escape | default: product.title | escape }}"
+              loading="eager"
+            >
+          {% else %}
+            {{ 'product-1' | placeholder_svg_tag: 'cp__media-main' }}
+          {% endif %}
+
+          {% if product.images.size > 1 %}
+            <button type="button" class="cp__nav cp__nav--prev" data-cp-prev aria-label="Previous image">&lsaquo;</button>
+            <button type="button" class="cp__nav cp__nav--next" data-cp-next aria-label="Next image">&rsaquo;</button>
+          {% endif %}
+        </div>
 
         {% if s.show_thumbnails and product.images.size > 1 %}
-          <div class="cp__thumbs" data-cp-thumbs>
-            {% for image in product.images limit: 6 %}
+          <div class="cp__thumbs">
+            {% for image in product.images %}
               <button
                 type="button"
                 class="cp__thumb{% if forloop.first %} is-active{% endif %}"
@@ -54,7 +56,13 @@
             {% endfor %}
           </div>
         {% endif %}
-      </div>
+
+        {% if product.images.size > 1 %}
+          <script type="application/json" data-cp-images>
+            [{% for image in product.images %}{{ image | image_url: width: 900 | json }}{% unless forloop.last %},{% endunless %}{% endfor %}]
+          </script>
+        {% endif %}
+      </cp-gallery>
 
       <div class="cp__info">
         {% content_for 'blocks' %}
@@ -95,6 +103,10 @@
     }
   }
 
+  .cp__media { display: block; }
+
+  .cp__media-frame { position: relative; }
+
   .cp__media-main {
     width: 100%;
     height: auto;
@@ -102,6 +114,29 @@
     object-fit: contain;
     background: var(--color-background-secondary, #f5f5f5);
   }
+
+  .cp__nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.85);
+    color: #1a1a1a;
+    font-size: 1.6rem;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.18);
+  }
+
+  .cp__nav:hover { background: #fff; }
+  .cp__nav--prev { inset-inline-start: 0.5rem; }
+  .cp__nav--next { inset-inline-end: 0.5rem; }
 
   .cp__thumbs {
     display: flex;
