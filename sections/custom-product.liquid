@@ -14,6 +14,16 @@
   endif
 %}
 
+<script>
+  /* On hard reload (not back/forward), skip the browser's mid-page scroll restore so the page paints at the top. No visible scroll. */
+  (function () {
+    var nav = performance.getEntriesByType('navigation')[0];
+    if (nav && nav.type === 'reload' && !location.hash && 'scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+  })();
+</script>
+
 <div class="cp" data-media-position="{{ s.media_position }}" {{ section.shopify_attributes }}>
   {% if product == blank %}
     <p class="cp__placeholder">Add this section to a product template to preview it.</p>
