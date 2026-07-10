@@ -320,7 +320,7 @@
           "name": "Rich text",
           "settings": {
             "content": "<p>Discover Glowing, Brighter Skin</p>",
-            "text_color": "#DADADA",
+            "text_color": "#AEA9A9",
             "background_color": "",
             "font_size": 16,
             "alignment": "left",
