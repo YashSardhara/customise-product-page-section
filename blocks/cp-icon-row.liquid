@@ -1,0 +1,49 @@
+{% comment %} Icon row — a row of icon + label items (cp-icon-item children). {% endcomment %}
+{% liquid assign b = block.settings %}
+
+<div class="cp-icon-row" style="--cp-icon-size: {{ b.icon_size }}px;" {{ block.shopify_attributes }}>
+  {% content_for 'blocks' %}
+</div>
+
+{% stylesheet %}
+  .cp-icon-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+  }
+  .cp-icon-row > * {
+    flex: 1 1 0;
+    min-width: 80px;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Icon row",
+  "tag": null,
+  "settings": [
+    {
+      "type": "range",
+      "id": "icon_size",
+      "label": "Icon size",
+      "min": 24,
+      "max": 96,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    }
+  ],
+  "blocks": [{ "type": "cp-icon-item" }],
+  "presets": [
+    {
+      "name": "Icon row",
+      "blocks": [
+        { "type": "cp-icon-item" },
+        { "type": "cp-icon-item" },
+        { "type": "cp-icon-item" }
+      ]
+    }
+  ]
+}
+{% endschema %}

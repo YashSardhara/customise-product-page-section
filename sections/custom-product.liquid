@@ -136,6 +136,15 @@
     gap: 1rem;
   }
 
+  /* Outline box around the reused theme quantity selector */
+  .cp__info quantity-selector-component {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--color-foreground, #1a1a1a);
+    border-radius: var(--style-border-radius-inputs, 6px);
+    overflow: hidden;
+  }
+
   .cp__placeholder {
     padding: 2rem;
     text-align: center;
@@ -167,10 +176,14 @@
     }
   ],
   "blocks": [
+    { "type": "cp-badge" },
     { "type": "cp-title" },
     { "type": "cp-price" },
     { "type": "cp-variant" },
     { "type": "buy-buttons" },
+    { "type": "cp-description" },
+    { "type": "cp-icon-row" },
+    { "type": "cp-richtext" },
     { "type": "why-customers-love" },
     { "type": "@app" }
   ],
@@ -181,10 +194,12 @@
     {
       "name": "Custom product",
       "blocks": [
+        { "type": "cp-badge" },
         { "type": "cp-title" },
         { "type": "cp-price" },
         { "type": "cp-variant" },
         { "type": "buy-buttons" },
+        { "type": "cp-description" },
         { "type": "why-customers-love" }
       ]
     }

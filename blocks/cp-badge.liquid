@@ -1,0 +1,70 @@
+{% comment %} Tag-driven badge (e.g. "Bestseller"). Shows only when the product has the configured tag. {% endcomment %}
+{% liquid
+  assign b = block.settings
+  assign product = closest.product
+  if request.visual_preview_mode and product == blank
+    assign product = collections.all.products.first
+  endif
+
+  assign show = false
+  assign tag_lower = b.tag | downcase | strip
+  for t in product.tags
+    assign t_lower = t | downcase | strip
+    if t_lower == tag_lower
+      assign show = true
+    endif
+  endfor
+  if request.visual_preview_mode
+    assign show = true
+  endif
+%}
+
+{% if show and b.tag != blank %}
+  <div
+    class="cp-badge"
+    style="{% if b.text_color != blank %}--cp-badge-color: {{ b.text_color }};{% endif %}"
+    {{ block.shopify_attributes }}
+  >
+    {{ b.label | default: b.tag | escape }}
+  </div>
+{% endif %}
+
+{% stylesheet %}
+  .cp-badge {
+    color: var(--cp-badge-color, #e2603f);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Badge",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "tag",
+      "label": "Product tag to match",
+      "info": "Badge shows only if the product has this tag (case-insensitive).",
+      "default": "Best Seller"
+    },
+    {
+      "type": "text",
+      "id": "label",
+      "label": "Badge text",
+      "info": "Leave blank to use the tag text.",
+      "default": "Bestseller"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#e2603f"
+    }
+  ],
+  "presets": [{ "name": "Badge" }]
+}
+{% endschema %}

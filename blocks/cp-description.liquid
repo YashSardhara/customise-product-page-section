@@ -1,0 +1,44 @@
+{% comment %} Custom product description block. Renders the product's rich-text description. {% endcomment %}
+{% liquid
+  assign b = block.settings
+  assign product = closest.product
+  if request.visual_preview_mode and product == blank
+    assign product = collections.all.products.first
+  endif
+%}
+
+{% if product.description != blank %}
+  <div class="cp-description cp-description--{{ b.alignment }}" {{ block.shopify_attributes }}>
+    {{ product.description }}
+  </div>
+{% endif %}
+
+{% stylesheet %}
+  .cp-description { line-height: 1.6; }
+  .cp-description--center { text-align: center; }
+  .cp-description--right { text-align: right; }
+  .cp-description > :first-child { margin-top: 0; }
+  .cp-description > :last-child { margin-bottom: 0; }
+  .cp-description img { max-width: 100%; height: auto; }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Product description",
+  "tag": null,
+  "settings": [
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "left"
+    }
+  ],
+  "presets": [{ "name": "Product description" }]
+}
+{% endschema %}

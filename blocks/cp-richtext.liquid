@@ -1,0 +1,101 @@
+{% comment %} Custom rich text block with color, font size, margin and padding controls. {% endcomment %}
+{% liquid assign b = block.settings %}
+
+{% capture rt_style %}
+  --cp-rt-size: {{ b.font_size }}px;
+  --cp-rt-padding: {{ b.padding }}px;
+  --cp-rt-margin: {{ b.margin }}px;
+  {% if b.text_color != blank %}--cp-rt-color: {{ b.text_color }};{% endif %}
+  {% if b.background_color != blank %}--cp-rt-bg: {{ b.background_color }};{% endif %}
+{% endcapture %}
+
+<div
+  class="cp-richtext cp-richtext--{{ b.alignment }}"
+  style="{{ rt_style | strip_newlines }}"
+  {{ block.shopify_attributes }}
+>
+  {{ b.content }}
+</div>
+
+{% stylesheet %}
+  .cp-richtext {
+    color: var(--cp-rt-color, inherit);
+    background: var(--cp-rt-bg, transparent);
+    font-size: var(--cp-rt-size, 1rem);
+    line-height: 1.6;
+    padding: var(--cp-rt-padding, 0px);
+    margin-block: var(--cp-rt-margin, 0px);
+    border-radius: var(--style-border-radius-inputs, 0);
+  }
+  .cp-richtext--center { text-align: center; }
+  .cp-richtext--right { text-align: right; }
+  .cp-richtext > :first-child { margin-top: 0; }
+  .cp-richtext > :last-child { margin-bottom: 0; }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Rich text",
+  "tag": null,
+  "settings": [
+    {
+      "type": "richtext",
+      "id": "content",
+      "label": "Text",
+      "default": "<p>Share details about your product, shipping, or brand.</p>"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color"
+    },
+    {
+      "type": "range",
+      "id": "font_size",
+      "label": "Font size",
+      "min": 12,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "range",
+      "id": "padding",
+      "label": "Padding",
+      "min": 0,
+      "max": 60,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "margin",
+      "label": "Vertical margin",
+      "min": 0,
+      "max": 60,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [{ "name": "Rich text" }]
+}
+{% endschema %}
