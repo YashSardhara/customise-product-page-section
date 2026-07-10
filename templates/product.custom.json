@@ -281,6 +281,7 @@
           ]
         }
       },
+      "disabled": true,
       "settings": {
         "content_width": "content-center-aligned",
         "desktop_media_position": "left",
@@ -291,6 +292,123 @@
         "background_color": "{{ settings.color_palette.background }}",
         "padding-block-start": 0,
         "padding-block-end": 0
+      }
+    },
+    "custom_product_gyrged": {
+      "type": "custom-product",
+      "blocks": {
+        "cp_title_qHiHni": {
+          "type": "cp-title",
+          "settings": {
+            "heading_tag": "h1",
+            "size": "1.8rem",
+            "alignment": "left"
+          },
+          "blocks": {}
+        },
+        "cp_price_7KTyXa": {
+          "type": "cp-price",
+          "settings": {
+            "show_compare_at": true,
+            "alignment": "left"
+          },
+          "blocks": {}
+        },
+        "cp_variant_hJRUcm": {
+          "type": "cp-variant",
+          "settings": {
+            "show_selected_value": true,
+            "alignment": "left"
+          },
+          "blocks": {}
+        },
+        "buy_buttons_AnCDRe": {
+          "type": "buy-buttons",
+          "settings": {
+            "stacking": false,
+            "text_color": "",
+            "show_pickup_availability": true,
+            "gift_card_form": true,
+            "recipient_button_style": "default",
+            "recipient_button_background": "{{ settings.color_palette.background }}",
+            "recipient_button_text": "{{ settings.color_palette.foreground }}",
+            "recipient_button_border": "{{ settings.color_palette.foreground }}",
+            "selected_recipient_button_style": "default",
+            "selected_recipient_button_background": "{{ settings.color_palette.foreground }}",
+            "selected_recipient_button_text": "{{ settings.color_palette.background }}",
+            "selected_recipient_button_border": "{{ settings.color_palette.foreground }}",
+            "input_style": "default",
+            "input_background_color": "{{ settings.color_palette.background }}",
+            "input_text_color": "{{ settings.color_palette.foreground }}",
+            "input_border_color": "{{ settings.color_palette.foreground }}",
+            "border_width": 1,
+            "border_radius": 0,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {
+            "quantity": {
+              "type": "quantity",
+              "static": true,
+              "settings": {
+                "input_style": "default",
+                "input_background_color": "{{ settings.color_palette.background }}",
+                "input_text_color": "{{ settings.color_palette.foreground }}",
+                "input_border_color": "{{ settings.color_palette.foreground }}",
+                "border_width": 1,
+                "border_radius": 0
+              },
+              "blocks": {}
+            },
+            "add-to-cart": {
+              "type": "add-to-cart",
+              "static": true,
+              "settings": {
+                "style_class": "button-secondary",
+                "custom_button_background": "{{ settings.color_palette.foreground }}",
+                "custom_button_text": "{{ settings.color_palette.background }}",
+                "custom_button_border": "{{ settings.color_palette.background }}"
+              },
+              "blocks": {}
+            },
+            "accelerated-checkout": {
+              "type": "accelerated-checkout",
+              "static": true,
+              "settings": {},
+              "blocks": {}
+            }
+          },
+          "block_order": []
+        },
+        "why_customers_love_7eRanT": {
+          "type": "why-customers-love",
+          "settings": {
+            "heading": "Why Customers Love This Product",
+            "bullet_1": "Dermatologist-tested and safe for daily use",
+            "bullet_2": "Made with clean, cruelty-free ingredients",
+            "bullet_3": "Loved by 50,000+ happy customers",
+            "accent_color": "#1a1a1a",
+            "padding-block-start": 16,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "cp_title_qHiHni",
+        "cp_price_7KTyXa",
+        "cp_variant_hJRUcm",
+        "buy_buttons_AnCDRe",
+        "why_customers_love_7eRanT"
+      ],
+      "name": "Custom product",
+      "settings": {
+        "media_position": "left",
+        "show_thumbnails": true
       }
     },
     "layered_slideshow_Cpwdxf": {
@@ -614,6 +732,7 @@
   },
   "order": [
     "main",
+    "custom_product_gyrged",
     "layered_slideshow_Cpwdxf"
   ]
 }
